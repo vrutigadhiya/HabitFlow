@@ -1,6 +1,6 @@
 (function () {
 
-  /* ── Toast System ── */
+  /* ── Toast ── */
   window.showToast = function (msg, type) {
     var wrap = document.getElementById('toastWrap');
     if (!wrap) return;
@@ -27,22 +27,11 @@
     grid.addEventListener('click', function (e) {
       var btn = e.target.closest('.e-btn');
       if (!btn) return;
-      grid.querySelectorAll('.e-btn').forEach(function (b) { b.classList.remove('sel'); });
+      grid.querySelectorAll('.e-btn').forEach(function (b) {
+        b.classList.remove('sel');
+      });
       btn.classList.add('sel');
       if (hidden) hidden.value = btn.dataset.e;
-    });
-  }
-
-  /* ── Category → emoji sync ── */
-  var catSel = document.getElementById('catSel');
-  var emojiMap = { health:'🥗', fitness:'💪', mind:'🧠', work:'💼', other:'🎯' };
-  if (catSel && grid) {
-    catSel.addEventListener('change', function () {
-      var e = emojiMap[catSel.value] || '🎯';
-      grid.querySelectorAll('.e-btn').forEach(function (b) {
-        b.classList.toggle('sel', b.dataset.e === e);
-      });
-      if (hidden) hidden.value = e;
     });
   }
 
@@ -56,10 +45,10 @@
       if (/[A-Z]/.test(v)) s++;
       if (/[0-9]/.test(v)) s++;
       if (/[^A-Za-z0-9]/.test(v)) s++;
-      var lbl = ['','Weak 😬','Fair 🙂','Good 👍','Strong 💪'][s] || '';
-      var col = ['','var(--red)','var(--amber)','var(--blue)','var(--green)'][s] || 'var(--muted)';
-      meter.textContent = v.length ? 'Password: ' + lbl : '';
-      meter.style.color = col;
+      var labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+      var colors = ['', 'var(--red)', 'var(--amber)', 'var(--blue)', 'var(--green)'];
+      meter.textContent = v.length ? 'Password strength: ' + labels[s] : '';
+      meter.style.color = colors[s] || 'var(--muted)';
     });
   }
 
@@ -67,11 +56,11 @@
   window.animateCount = function (el, from, to, duration) {
     if (!el) return;
     var start = null;
-    var suffix = el.dataset.suffix || '';
     function step(ts) {
       if (!start) start = ts;
       var prog = Math.min((ts - start) / duration, 1);
       var ease = 1 - Math.pow(1 - prog, 3);
+      var suffix = el.dataset.suffix || '';
       el.textContent = Math.round(from + (to - from) * ease) + suffix;
       if (prog < 1) requestAnimationFrame(step);
     }
@@ -80,7 +69,6 @@
 
   document.querySelectorAll('.stat-val[data-target]').forEach(function (el) {
     var target = parseInt(el.dataset.target);
-    var suffix = el.dataset.suffix || '';
     animateCount(el, 0, target, 900);
   });
 
@@ -90,11 +78,11 @@
     for (var i = 27; i >= 0; i--) {
       var d = document.createElement('div');
       d.className = 'cal-cell';
-      var r = Math.random();
-      if      (r > 0.8) d.classList.add('c4');
-      else if (r > 0.6) d.classList.add('c3');
-      else if (r > 0.4) d.classList.add('c2');
-      else if (r > 0.25) d.classList.add('c1');
+      var rand = Math.random();
+      if      (rand > 0.8)  d.classList.add('c4');
+      else if (rand > 0.6)  d.classList.add('c3');
+      else if (rand > 0.4)  d.classList.add('c2');
+      else if (rand > 0.25) d.classList.add('c1');
       if (i === 0) d.classList.add('today');
       cal.appendChild(d);
     }
@@ -102,12 +90,12 @@
 
   /* ── Motivational Quotes ── */
   var quotes = [
-    { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
+    { text: "We are what we repeatedly do.", author: "Aristotle" },
     { text: "Motivation gets you started. Habit keeps you going.", author: "Jim Ryun" },
-    { text: "Small daily improvements over time lead to stunning results.", author: "Robin Sharma" },
-    { text: "You do not rise to the level of your goals. You fall to the level of your systems.", author: "James Clear" },
-    { text: "The secret of your future is hidden in your daily routine.", author: "Mike Murdock" },
-    { text: "Discipline is choosing between what you want now and what you want most.", author: "Abraham Lincoln" },
+    { text: "Small daily improvements lead to stunning results.", author: "Robin Sharma" },
+    { text: "You do not rise to your goals. You fall to your systems.", author: "James Clear" },
+    { text: "The secret of your future is in your daily routine.", author: "Mike Murdock" },
+    { text: "Discipline is choosing what you want most.", author: "Abraham Lincoln" },
     { text: "A year from now you may wish you had started today.", author: "Karen Lamb" }
   ];
   var qi = Math.floor(Math.random() * quotes.length);
@@ -127,59 +115,27 @@
 
   renderQuote();
 
-  /* ── Strict Mode toggle ── */
+  /* ── Strict Mode ── */
   window.toggleStrict = function (el) {
     var on = el.checked;
-    showToast(on ? '🔒 Strict mode ON — no excuses!' : '🔓 Strict mode OFF', on ? 'ok' : 'inf');
+    showToast(on ? 'Strict mode ON' : 'Strict mode OFF', on ? 'ok' : 'inf');
     localStorage.setItem('strictMode', on ? '1' : '0');
-    document.querySelectorAll('[id^=strictToggle]').forEach(function (t) { t.checked = on; });
+    document.querySelectorAll('[id^=strictToggle]').forEach(function (t) {
+      t.checked = on;
+    });
   };
 
-  window.toggleStrictFromSidebar = function () {
-    var current = localStorage.getItem('strictMode') !== '0';
-    var next = !current;
-    localStorage.setItem('strictMode', next ? '1' : '0');
-    showToast(next ? '🔒 Strict mode ON' : '🔓 Strict mode OFF', next ? 'ok' : 'inf');
-    document.querySelectorAll('[id^=strictToggle]').forEach(function (t) { t.checked = next; });
-  };
-
-  // Apply saved strict mode state
   var strict = localStorage.getItem('strictMode');
   if (strict !== null) {
-    document.querySelectorAll('[id^=strictToggle]').forEach(function (t) { t.checked = strict === '1'; });
+    document.querySelectorAll('[id^=strictToggle]').forEach(function (t) {
+      t.checked = (strict === '1');
+    });
   }
 
-  /* ── Browser notification scheduler ── */
-  function scheduleReminder(habitName, timeStr) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    var parts = timeStr.split(':');
-    if (parts.length < 2) return;
-    var now = new Date();
-    var remind = new Date();
-    remind.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
-    var diff = remind - now;
-    if (diff > 0 && diff < 3600000 * 12) {
-      setTimeout(function () {
-        new Notification('HabitFlow Reminder 🔔', {
-          body: 'Time to: ' + habitName + '! Don\'t break your streak 🔥',
-          icon: ''
-        });
-      }, diff);
-    }
-  }
-
-  /* ── Page load toast ── */
+  /* ── URL param toasts ── */
   var params = new URLSearchParams(window.location.search);
-  if (params.get('added')   === 'true') showToast('✅ Habit added!', 'ok');
-  if (params.get('deleted') === 'true') showToast('🗑 Habit removed', 'err');
-  if (params.get('done')    === 'true') showToast('🔥 Habit completed! Streak growing!', 'ok');
-
-  /* ── Keyboard shortcut: N = new habit ── */
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'n' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-      var f = document.getElementById('addForm');
-      if (f) { f.style.display = f.style.display === 'none' ? 'block' : 'none'; }
-    }
-  });
+  if (params.get('added')   === 'true') showToast('Habit added!', 'ok');
+  if (params.get('deleted') === 'true') showToast('Habit deleted', 'err');
+  if (params.get('done')    === 'true') showToast('Habit completed! Keep going!', 'ok');
 
 })();
